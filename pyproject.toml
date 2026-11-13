@@ -1,0 +1,15 @@
+
+[project]
+name = "hackenginepro"
+version = "1.0.0"
+requires-python = ">=3.12"
+dependencies = [
+    "flet"
+]
+
+[tool.flet]
+org = "com.notrack.hack"
+product = "HackEnginePro"
+
+[tool.flet.app]
+module = "app"
