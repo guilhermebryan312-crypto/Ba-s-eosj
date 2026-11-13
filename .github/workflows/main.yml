@@ -1,7 +1,56 @@
+
+name: Build HackEnginePro APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Extract assets
         run: |
           mkdir -p assets
           unzip -o assets.zip -d /tmp/assets
-          ICON=$(find /tmp/assets -iname "icon.png" -type f | head -n 1)
+          ICON=$(find /tmp/assets -type f -iname "icon.png" | head -n 1)
           test -n "$ICON"
           cp "$ICON" assets/icon.png
+
+      - name: Check project files
+        run: |
+          test -f app.py
+          test -f vision_engine.py
+          test -f requirements.txt
+          test -f assets/icon.png
+          echo "Project files verified"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install --upgrade flet
+
+      - name: Build Android APK
+        run: |
+          flet build apk --module-name app --verbose
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HackEnginePro-APK
+          path: build/apk/*.apk
+          if-no-files-found: error
