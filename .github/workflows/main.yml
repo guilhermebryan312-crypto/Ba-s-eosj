@@ -30,13 +30,12 @@ jobs:
           test -n "$ICON"
           cp "$ICON" assets/icon.png
 
-      - name: Check project files
+      - name: Check project
         run: |
           test -f app.py
           test -f vision_engine.py
           test -f requirements.txt
           test -f assets/icon.png
-          echo "Project files verified"
 
       - name: Install dependencies
         run: |
@@ -46,7 +45,9 @@ jobs:
 
       - name: Build Android APK
         run: |
-          flet build apk --module-name app --verbose
+          flet build apk --verbose \
+            --project HackEnginePro \
+            --org com.notrack.hack
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
