@@ -4,40 +4,51 @@ name: Build HackEnginePro APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install Flet
+      - name: Extract assets
         run: |
-          python -m pip install --upgrade pip
-          pip install "flet==0.23.1"
+          if [ -f assets.zip ]; then
+            mkdir -p assets
+            unzip -o assets.zip -d /tmp/hackengine-assets
+            ICON=$(find /tmp/hackengine-assets -type f -iname "icon.png" -print -quit)
+            if [ -n "$ICON" ]; then
+              cp "$ICON" assets/icon.png
+            fi
+          fi
 
       - name: Check project files
         run: |
-          ls -la
+          test -f pyproject.toml
           test -f app.py
           test -f vision_engine.py
-          test -f requirements.txt
 
-      - name: Build Android APK
-        run: |
-          flet build apk --verbose
+      - name: Build APK
+        id: build
+        uses: flet-dev/flet-build-action@v1
+        with:
+          target: apk
+          runner-python-version: "3.12"
+          bundled-python-version: "3.12"
+          build-number: ${{ github.run_number }}
+          cache: false
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: HackEnginePro-APK
-          path: build/apk/*.apk
+          path: ${{ steps.build.outputs.archive-path }}
+          archive: false
           if-no-files-found: error
