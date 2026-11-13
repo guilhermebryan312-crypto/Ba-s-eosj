@@ -1,20 +1,36 @@
 
-[project]
-name = "hackenginepro"
-version = "1.0.0"
-requires-python = ">=3.14,<3.15"
-dependencies = [
-    "flet"
-]
+name: Build HackEnginePro APK
 
-[dependency-groups]
-dev = [
-    "flet-cli"
-]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-[tool.flet]
-org = "com.notrack.hack"
-product = "HackEnginePro"
+permissions:
+  contents: read
 
-[tool.flet.app]
-module = "app"
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build APK
+        id: build
+        uses: flet-dev/flet-build-action@v1
+        with:
+          target: apk
+          runner-python-version: "3.14"
+          bundled-python-version: "3.14"
+          build-number: ${{ github.run_number }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ steps.build.outputs.archive-path }}
+          archive: false
+          if-no-files-found: error
