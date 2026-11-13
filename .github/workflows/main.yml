@@ -1,0 +1,7 @@
+      - name: Extract assets
+        run: |
+          mkdir -p assets
+          unzip -o assets.zip -d /tmp/assets
+          ICON=$(find /tmp/assets -iname "icon.png" -type f | head -n 1)
+          test -n "$ICON"
+          cp "$ICON" assets/icon.png
